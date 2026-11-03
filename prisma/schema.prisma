@@ -1,0 +1,163 @@
+generator client {
+ provider = "prisma-client-js"
+}
+datasource db {
+ provider = "postgresql"
+ url = env("DATABASE_URL")
+}
+model User {
+ id String @id @default(cuid())
+ email String @unique
+ passwordHash String
+ role String @default("ADMIN")
+ sessions Session[]
+ createdAt DateTime @default(now())
+}
+model Session {
+ id String @id
+ userId String
+ user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+ expiresAt DateTime
+ @@index([expiresAt])
+}
+model LoginAttempt {
+ id String @id
+ count Int @default(0)
+ lockedUntil DateTime?
+ updatedAt DateTime @updatedAt
+}
+model Party {
+ id String @id @default(cuid())
+ kind String
+ name String
+ email String?
+ phone String?
+ group String @default("LOCAL")
+ notes String @default("")
+ archived Boolean @default(false)
+ vehicles Vehicle[]
+ bills Bill[]
+ sales Sale[]
+ createdAt DateTime @default(now())
+}
+model Vehicle {
+ id String @id @default(cuid())
+ code String @unique
+ make String
+ model String
+ year Int?
+ chassis String? @unique
+ acquisition String @default("INVENTORY")
+ location String @default("JAPAN")
+ status String @default("JAPAN_POOL")
+ committedAt DateTime?
+ supplierId String?
+ supplier Party? @relation(fields:[supplierId],references:[id])
+ shippingEstimate BigInt @default(1200000)
+ notes String @default("")
+ archived Boolean @default(false)
+ bills Bill[]
+ sale Sale?
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+}
+model Bill {
+ id String @id @default(cuid())
+ reference String @unique
+ supplierId String
+ supplier Party @relation(fields:[supplierId],references:[id])
+ vehicleId String?
+ vehicle Vehicle? @relation(fields:[vehicleId],references:[id])
+ category String
+ description String
+ amount BigInt
+ notes String @default("")
+ originalAmount String
+ currency String @default("AED")
+ issuedAt DateTime
+ dueAt DateTime?
+ payments Payment[]
+ adjustments Adjustment[]
+ createdAt DateTime @default(now())
+}
+model Sale {
+ id String @id @default(cuid())
+ reference String @unique
+ vehicleId String @unique
+ vehicle Vehicle @relation(fields:[vehicleId],references:[id])
+ customerId String
+ customer Party @relation(fields:[customerId],references:[id])
+ type String
+ amount BigInt
+ status String @default("AGREED")
+ agreedAt DateTime
+ soldAt DateTime?
+ deliveredAt DateTime?
+ installments Json
+ notes String @default("")
+ payments Payment[]
+ adjustments Adjustment[]
+ createdAt DateTime @default(now())
+}
+model Payment {
+ id String @id @default(cuid())
+ idempotencyKey String @unique
+ reference String @unique
+ kind String
+ billId String?
+ bill Bill? @relation(fields:[billId],references:[id])
+ saleId String?
+ sale Sale? @relation(fields:[saleId],references:[id])
+ amount BigInt
+ date DateTime
+ method String @default("BANK_TRANSFER")
+ account String @default("BUSINESS")
+ reconciliation String @default("UNRECONCILED")
+ reconciliationNote String @default("")
+ status String @default("PENDING")
+ verifiedAt DateTime?
+ reversedAt DateTime?
+ reversalReason String?
+ notes String @default("")
+ createdAt DateTime @default(now())
+}
+model Adjustment {
+ id String @id @default(cuid())
+ reference String @unique
+ billId String?
+ bill Bill? @relation(fields:[billId],references:[id])
+ saleId String?
+ sale Sale? @relation(fields:[saleId],references:[id])
+ amount BigInt
+ reason String
+ date DateTime
+ createdAt DateTime @default(now())
+}
+model Document {
+ id String @id @default(cuid())
+ name String
+ key String @unique
+ mime String
+ size Int
+ entityType String
+ entityId String
+ category String
+ createdAt DateTime @default(now())
+}
+model Audit {
+ id String @id @default(cuid())
+ actorId String
+ action String
+ entityId String
+ data Json
+ createdAt DateTime @default(now())
+ @@index([createdAt])
+}
+model Setting {
+ id String @id @default("business")
+ shippingEstimate BigInt @default(1200000)
+ vatNote String @default("VAT registration and treatment not configured")
+ categories Json
+ plans Json
+ demo Boolean @default(false)
+}

@@ -1,0 +1,18 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: keitora
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your environment}
+      POSTGRES_DB: keitora
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - keitora-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keitora"]
+      interval: 5s
+      retries: 10
+volumes:
+  keitora-db:

@@ -1,0 +1,18 @@
+{
+  "vehicles": [
+    {
+      "code": "REPLACE-WITH-ACTUAL-ID",
+      "make": "REPLACE-WITH-ACTUAL-MAKE",
+      "model": "REPLACE-WITH-ACTUAL-MODEL",
+      "year": "",
+      "chassis": "",
+      "acquisition": "INVENTORY",
+      "location": "UAE",
+      "status": "UAE_INVENTORY",
+      "committedAt": "2026-01-01",
+      "supplierId": "",
+      "shippingEstimate": "12000.00",
+      "notes": "TEMPLATE ONLY — replace all identities and the agreement date before import. Shipping is an estimate, not a cost."
+    }
+  ]
+}
